@@ -1,0 +1,275 @@
+// This is your Prisma schema file
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String    @id @default(uuid())
+  name            String
+  email           String    @unique
+  passwordHash    String    @map("password_hash")
+  emailVerifiedAt DateTime? @map("email_verified_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  accounts       Account[]
+  cards          Card[]
+  categories     Category[]
+  merchants      Merchant[]
+  loans          Loan[]
+  recurringRules RecurringRule[]
+  transactions   Transaction[]
+  budgets        Budget[]
+  snapshots      Snapshot[]
+
+  @@map("users")
+}
+
+model Account {
+  id             String      @id @default(uuid())
+  userId         String      @map("user_id")
+  name           String
+  type           AccountType
+  openingBalance Float       @map("opening_balance")
+  currency       String      @default("BRL")
+  createdAt      DateTime    @default(now()) @map("created_at")
+  updatedAt      DateTime    @updatedAt @map("updated_at")
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cards        Card[]
+  loans        Loan[]
+  transactions Transaction[]
+
+  @@index([userId])
+  @@map("accounts")
+}
+
+enum AccountType {
+  checking
+  savings
+  cash
+  other
+}
+
+model Card {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  accountId   String?  @map("account_id")
+  brand       String
+  nickname    String
+  creditLimit Float    @map("credit_limit")
+  billingDay  Int      @map("billing_day")
+  dueDay      Int      @map("due_day")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  account      Account?      @relation(fields: [accountId], references: [id], onDelete: SetNull)
+  transactions Transaction[]
+
+  @@index([userId])
+  @@map("cards")
+}
+
+model Category {
+  id        String       @id @default(uuid())
+  userId    String       @map("user_id")
+  name      String
+  type      CategoryType
+  color     String
+  createdAt DateTime     @default(now()) @map("created_at")
+  updatedAt DateTime     @updatedAt @map("updated_at")
+
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  merchants      Merchant[]
+  recurringRules RecurringRule[]
+  transactions   Transaction[]
+  budgets        Budget[]
+
+  @@index([userId])
+  @@map("categories")
+}
+
+enum CategoryType {
+  expense
+  income
+  transfer
+}
+
+model Merchant {
+  id                String   @id @default(uuid())
+  userId            String   @map("user_id")
+  name              String
+  defaultCategoryId String?  @map("default_category_id")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  defaultCategory Category?     @relation(fields: [defaultCategoryId], references: [id], onDelete: SetNull)
+  transactions    Transaction[]
+
+  @@index([userId])
+  @@map("merchants")
+}
+
+model Loan {
+  id                  String    @id @default(uuid())
+  userId              String    @map("user_id")
+  name                String
+  principal           Float
+  interestRateAnnual  Float     @map("interest_rate_annual")
+  startDate           DateTime  @map("start_date")
+  endDate             DateTime? @map("end_date")
+  installmentDay      Int       @map("installment_day")
+  accountId           String    @map("account_id")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("loans")
+}
+
+model RecurringRule {
+  id               String    @id @default(uuid())
+  userId           String    @map("user_id")
+  name             String
+  categoryId       String    @map("category_id")
+  amount           Float?
+  flow             Flow
+  frequency        Frequency
+  startDate        DateTime  @map("start_date")
+  endDate          DateTime? @map("end_date")
+  nextOccurrenceAt DateTime  @map("next_occurrence_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([nextOccurrenceAt])
+  @@map("recurring_rules")
+}
+
+enum Flow {
+  expense
+  income
+  transfer
+}
+
+enum Frequency {
+  daily
+  weekly
+  biweekly
+  monthly
+  bimonthly
+  quarterly
+  semiannual
+  annual
+}
+
+model Transaction {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  date        DateTime
+  description String
+  merchantId  String?  @map("merchant_id")
+  categoryId  String   @map("category_id")
+  flow        Flow
+  amount      Float
+  accountId   String?  @map("account_id")
+  cardId      String?  @map("card_id")
+  planned     Boolean  @default(false)
+  reconciled  Boolean  @default(false)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  merchant    Merchant?    @relation(fields: [merchantId], references: [id], onDelete: SetNull)
+  category    Category     @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  account     Account?     @relation(fields: [accountId], references: [id], onDelete: SetNull)
+  card        Card?        @relation(fields: [cardId], references: [id], onDelete: SetNull)
+  attachments Attachment[]
+
+  @@index([userId])
+  @@index([date])
+  @@index([categoryId])
+  @@map("transactions")
+}
+
+model Attachment {
+  id            String   @id @default(uuid())
+  transactionId String   @map("transaction_id")
+  storageKey    String   @map("storage_key")
+  mime          String
+  size          Int
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  transaction Transaction   @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  ocrExtract  OcrExtract?
+
+  @@index([transactionId])
+  @@map("attachments")
+}
+
+model OcrExtract {
+  id           String   @id @default(uuid())
+  attachmentId String   @unique @map("attachment_id")
+  rawText      String   @map("raw_text")
+  parsed       Json
+  confidence   Float
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  attachment Attachment @relation(fields: [attachmentId], references: [id], onDelete: Cascade)
+
+  @@map("ocr_extracts")
+}
+
+model Budget {
+  id         String       @id @default(uuid())
+  userId     String       @map("user_id")
+  period     BudgetPeriod
+  year       Int
+  month      Int?
+  categoryId String?      @map("category_id")
+  amount     Float
+  createdAt  DateTime     @default(now()) @map("created_at")
+  updatedAt  DateTime     @updatedAt @map("updated_at")
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([year, month])
+  @@map("budgets")
+}
+
+enum BudgetPeriod {
+  monthly
+  quarterly
+  annual
+}
+
+model Snapshot {
+  id                String   @id @default(uuid())
+  userId            String   @map("user_id")
+  date              DateTime
+  balanceByAccount  Json     @map("balance_by_account")
+  spendByCategory   Json     @map("spend_by_category")
+  spendByCard       Json     @map("spend_by_card")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([date])
+  @@map("snapshots")
+}

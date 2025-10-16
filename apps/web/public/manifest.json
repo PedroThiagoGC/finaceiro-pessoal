@@ -1,0 +1,41 @@
+{
+  "short_name": "PWR Finanças",
+  "name": "PWR Finanças - Gestão Financeira Pessoal",
+  "description": "Sistema completo de gestão financeira pessoal com suporte offline",
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#3b82f6",
+  "background_color": "#ffffff",
+  "orientation": "portrait-primary",
+  "categories": ["finance", "productivity"],
+  "shortcuts": [
+    {
+      "name": "Nova Transação",
+      "short_name": "Lançar",
+      "description": "Criar nova transação",
+      "url": "/lancamentos/novo",
+      "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "Ver resumo financeiro",
+      "url": "/dashboard",
+      "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
+    }
+  ]
+}

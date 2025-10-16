@@ -1,0 +1,31 @@
+{
+  "name": "pwr-financas",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sistema de gestão financeira pessoal mobile-first + PWA",
+  "scripts": {
+    "dev": "pnpm --parallel -r dev",
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "test:e2e": "cd apps/web && pnpm test:e2e",
+    "lint": "pnpm -r lint",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "db:migrate": "cd apps/api && pnpm prisma migrate dev",
+    "db:seed": "cd apps/api && pnpm prisma db seed",
+    "db:studio": "cd apps/api && pnpm prisma studio",
+    "docker:up": "docker-compose -f infra/docker-compose.yaml up -d",
+    "docker:down": "docker-compose -f infra/docker-compose.yaml down",
+    "docker:logs": "docker-compose -f infra/docker-compose.yaml logs -f",
+    "prepare": "husky install"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "husky": "^8.0.3",
+    "prettier": "^3.1.0",
+    "typescript": "^5.3.3"
+  }
+}
