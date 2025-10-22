@@ -26,7 +26,7 @@
     "@nestjs/bull": "^10.0.1",
     "@nestjs/swagger": "^7.1.17",
     "@prisma/client": "^5.7.1",
-    "@pwr/types": "workspace:*",
+  "@pwr/types": "file:../../packages/types",
     "bcryptjs": "^2.4.3",
     "bull": "^4.12.0",
     "class-validator": "^0.14.0",
