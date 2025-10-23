@@ -2,6 +2,9 @@ FROM node:18-alpine
 
 WORKDIR /app
 
+# Copiar tsconfig da raiz
+COPY tsconfig.json /tsconfig.json
+
 # Copiar packages/types primeiro
 COPY packages/types /app/packages/types
 
