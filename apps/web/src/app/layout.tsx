@@ -17,6 +17,10 @@ export const metadata: Metadata = {
   title: 'PWR Finanças - Gestão Financeira Pessoal',
   description: 'Sistema completo de gestão financeira pessoal com suporte offline',
   manifest: '/manifest.json',
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/icon-192x192.png',
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
@@ -31,10 +35,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
-      <head>
-        <link rel="icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" href="/icon-192x192.png" />
-      </head>
+      {/* head is handled by Next.js metadata API */}
       <body className={inter.className}>
         <Providers>{children}</Providers>
       </body>

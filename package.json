@@ -8,16 +8,18 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "concurrently -k -n api,web -c blue,green \"npm run -w @pwr/api dev\" \"npm run -w @pwr/web dev\"",
+    "dev": "dotenv -e .env -- concurrently -k -n api,web -c blue,green \"npm run -w @pwr/api dev\" \"npm run -w @pwr/web dev\"",
+    "dev:api": "dotenv -e .env -- npm run -w @pwr/api dev",
+    "dev:web": "dotenv -e .env -- npm run -w @pwr/web dev",
     "build": "npm run -ws --if-present build",
     "test": "npm run -ws --if-present test",
     "test:e2e": "npm run -w @pwr/web test:e2e",
     "lint": "npm run -ws --if-present lint",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
-    "db:generate": "npm run -w @pwr/api prisma:generate",
-    "db:migrate": "npm run -w @pwr/api prisma:migrate",
-    "db:seed": "npm run -w @pwr/api prisma:seed",
-    "db:studio": "npm run -w @pwr/api prisma:studio",
+    "db:generate": "dotenv -e .env -- npm run -w @pwr/api prisma:generate",
+    "db:migrate": "dotenv -e .env -- npm run -w @pwr/api prisma:migrate",
+    "db:seed": "dotenv -e .env -- npm run -w @pwr/api prisma:seed",
+    "db:studio": "dotenv -e .env -- npm run -w @pwr/api prisma:studio",
     "docker:up": "docker-compose -f infra/docker-compose.yaml up -d",
     "docker:down": "docker-compose -f infra/docker-compose.yaml down",
     "docker:logs": "docker-compose -f infra/docker-compose.yaml logs -f",
@@ -29,6 +31,8 @@
   "devDependencies": {
     "@types/node": "^20.10.0",
     "concurrently": "^8.2.2",
+    "cross-env": "^10.1.0",
+    "dotenv-cli": "^10.0.0",
     "husky": "^8.0.3",
     "prettier": "^3.1.0",
     "typescript": "^5.3.3"

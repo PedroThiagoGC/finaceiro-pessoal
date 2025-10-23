@@ -45,6 +45,7 @@ model Account {
   loans        Loan[]
   transactions Transaction[]
 
+  @@unique([userId, name])
   @@index([userId])
   @@map("accounts")
 }
@@ -72,6 +73,7 @@ model Card {
   account      Account?      @relation(fields: [accountId], references: [id], onDelete: SetNull)
   transactions Transaction[]
 
+  @@unique([userId, nickname])
   @@index([userId])
   @@map("cards")
 }
@@ -91,6 +93,7 @@ model Category {
   transactions   Transaction[]
   budgets        Budget[]
 
+  @@unique([userId, name])
   @@index([userId])
   @@map("categories")
 }
