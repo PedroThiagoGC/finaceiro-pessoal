@@ -1,5 +1,8 @@
-# Vercel deployment for Next.js
+# Vercel deployment for Next.js only
 .vercel
+
+# Ignore API folder (NestJS - not compatible with Vercel serverless)
+apps/api
 
 # Build outputs
 dist
@@ -9,3 +12,12 @@ build
 # Local env files
 .env*.local
 .env.production
+
+# Infra
+infra/
+docker-compose.yaml
+Dockerfile
+
+# Docs
+*.md
+!README.md
