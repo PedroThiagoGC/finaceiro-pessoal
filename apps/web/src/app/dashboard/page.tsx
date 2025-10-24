@@ -3,6 +3,7 @@
 import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import RecentTransactionsList from '@/components/transactions/RecentTransactionsList';
 
 interface DashboardStats {
   totalIncome: number;
@@ -120,22 +121,22 @@ export default function DashboardPage() {
             <QuickActionButton
               label="Nova Transação"
               icon="💸"
-              onClick={() => alert('Em desenvolvimento')}
+              onClick={() => router.push('/transactions/new')}
             />
             <QuickActionButton
               label="Contas"
               icon="🏦"
-              onClick={() => alert('Em desenvolvimento')}
+              onClick={() => router.push('/accounts')}
             />
             <QuickActionButton
               label="Cartões"
               icon="💳"
-              onClick={() => alert('Em desenvolvimento')}
+              onClick={() => router.push('/cards')}
             />
             <QuickActionButton
               label="Categorias"
               icon="📊"
-              onClick={() => alert('Em desenvolvimento')}
+              onClick={() => router.push('/categories')}
             />
           </div>
         </div>
@@ -143,15 +144,7 @@ export default function DashboardPage() {
         {/* Recent Transactions */}
         <div className="bg-white rounded-lg shadow p-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Transações Recentes</h2>
-          <div className="text-center py-8 text-gray-500">
-            <p>Nenhuma transação encontrada</p>
-            <button
-              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
-              onClick={() => alert('Em desenvolvimento')}
-            >
-              Adicionar Primeira Transação
-            </button>
-          </div>
+          <RecentTransactionsList />
         </div>
       </main>
     </div>

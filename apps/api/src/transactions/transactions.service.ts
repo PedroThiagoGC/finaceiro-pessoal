@@ -70,6 +70,7 @@ export class TransactionsService {
     cardId?: string;
     accountId?: string;
     flow?: string;
+    limit?: number;
   }) {
     const where: any = { userId };
 
@@ -84,6 +85,8 @@ export class TransactionsService {
     if (filters?.accountId) where.accountId = filters.accountId;
     if (filters?.flow) where.flow = filters.flow;
 
+    const take = filters?.limit ? Math.min(Math.max(Number(filters.limit) || 0, 1), 100) : undefined;
+
     return this.prisma.transaction.findMany({
       where,
       include: {
@@ -94,6 +97,7 @@ export class TransactionsService {
         attachments: true,
       },
       orderBy: { date: 'desc' },
+      ...(take ? { take } : {}),
     });
   }
 

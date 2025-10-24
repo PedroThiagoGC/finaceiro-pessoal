@@ -79,12 +79,18 @@ export class TransactionsController {
   @ApiQuery({ name: 'startDate', required: false, description: 'Data inicial (ISO 8601)' })
   @ApiQuery({ name: 'endDate', required: false, description: 'Data final (ISO 8601)' })
   @ApiQuery({ name: 'reconciled', required: false, type: Boolean, description: 'Filtrar por conciliação' })
+  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Limita a quantidade de transações retornadas (1..100)' })
   @SwaggerResponse({ 
     status: 200, 
     description: 'Lista de transações retornada com sucesso',
     type: [TransactionDto],
   })
   async findAll(@Request() req: any, @Query() filters: any): Promise<ApiResponse> {
+    if (filters?.limit !== undefined) {
+      const n = Number(filters.limit);
+      if (!Number.isFinite(n)) delete filters.limit;
+      else filters.limit = Math.min(Math.max(Math.trunc(n), 1), 100);
+    }
     const transactions = await this.transactionsService.findAll(req.user.userId, filters);
     return {
       success: true,
