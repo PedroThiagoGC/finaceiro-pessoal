@@ -27,6 +27,7 @@
     "@nestjs/swagger": "^7.1.17",
     "@prisma/client": "^5.7.1",
     "@pwr/types": "file:../../packages/types",
+    "@supabase/supabase-js": "^2.76.1",
     "bcryptjs": "^2.4.3",
     "bull": "^4.12.0",
     "class-transformer": "^0.5.1",

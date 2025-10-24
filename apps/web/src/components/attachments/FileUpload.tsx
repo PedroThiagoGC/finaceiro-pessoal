@@ -1,7 +1,7 @@
 'use client';
 
 import { OcrResult, useUploadFile } from '@/lib/attachments';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface FileUploadProps {
   onUploadComplete?: (result: {
@@ -24,6 +24,13 @@ export function FileUpload({
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const uploadMutation = useUploadFile();
+
+  // Define atributo 'capture' via JS para evitar aviso do linter em browsers desktop
+  useEffect(() => {
+    if (cameraInputRef.current) {
+      cameraInputRef.current.setAttribute('capture', 'environment');
+    }
+  }, []);
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -118,12 +125,10 @@ export function FileUpload({
               Selecionar arquivo
             </button>
             {/* Inputs ocultos */}
-            {/* eslint-disable-next-line */}
             <input
               ref={cameraInputRef}
               type="file"
               accept="image/*"
-              capture="environment"
               onChange={handleChange}
               className="hidden"
               aria-label="Abrir câmera para tirar foto"

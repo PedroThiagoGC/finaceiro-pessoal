@@ -1,0 +1,11 @@
+# Vercel deployment for Next.js
+.vercel
+
+# Build outputs
+dist
+build
+.next
+
+# Local env files
+.env*.local
+.env.production

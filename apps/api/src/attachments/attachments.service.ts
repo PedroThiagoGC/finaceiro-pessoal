@@ -1,12 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { OcrService } from '../ocr/ocr.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { SupabaseStorageAdapter } from './storage.adapter';
 
 export interface UploadResult {
   attachmentId: string;
   storageKey: string;
+  publicUrl?: string;
   ocrResult?: {
     rawText: string;
     confidence: number;
@@ -23,16 +26,29 @@ export interface UploadResult {
 @Injectable()
 export class AttachmentsService {
   private readonly uploadDir = path.join(process.cwd(), 'uploads');
+  private readonly useSupabase: boolean;
+  private storageAdapter?: SupabaseStorageAdapter;
 
   constructor(
     private prisma: PrismaService,
     private ocrService: OcrService,
+    private configService: ConfigService,
   ) {
-    this.ensureUploadDir();
+    // Usa Supabase se as credenciais estiverem disponíveis, caso contrário usa filesystem
+    this.useSupabase = !!(
+      this.configService.get('NEXT_PUBLIC_SUPABASE_URL') &&
+      this.configService.get('SUPABASE_SERVICE_ROLE_KEY')
+    );
+
+    if (this.useSupabase) {
+      this.storageAdapter = new SupabaseStorageAdapter(configService);
+    } else {
+      this.ensureUploadDir();
+    }
   }
 
   /**
-   * Garante que o diretório de uploads existe
+   * Garante que o diretório de uploads existe (fallback filesystem)
    */
   private async ensureUploadDir() {
     try {
@@ -51,11 +67,36 @@ export class AttachmentsService {
     transactionId?: string,
     processOcr = true,
   ): Promise<UploadResult> {
-    const storageKey = `${Date.now()}-${file.originalname}`;
-    const filePath = path.join(this.uploadDir, storageKey);
+    let storageKey: string;
+    let publicUrl: string | undefined;
+    let tempFilePath: string | undefined;
 
-    // Salva arquivo
-    await fs.writeFile(filePath, file.buffer);
+    // Upload para Supabase ou filesystem
+    if (this.useSupabase && this.storageAdapter) {
+      const uploaded = await this.storageAdapter.upload(
+        file.buffer,
+        file.originalname,
+        file.mimetype,
+      );
+      storageKey = uploaded.storageKey;
+      publicUrl = uploaded.publicUrl;
+
+      // Para OCR, precisamos salvar temporariamente
+      if (
+        processOcr &&
+        ['image/jpeg', 'image/png', 'image/jpg'].includes(file.mimetype)
+      ) {
+        tempFilePath = path.join(this.uploadDir, `temp-${storageKey}`);
+        await this.ensureUploadDir();
+        await fs.writeFile(tempFilePath, file.buffer);
+      }
+    } else {
+      // Fallback: filesystem local
+      storageKey = `${Date.now()}-${file.originalname}`;
+      const filePath = path.join(this.uploadDir, storageKey);
+      await fs.writeFile(filePath, file.buffer);
+      tempFilePath = filePath;
+    }
 
     // Cria registro de attachment
     const attachment = await this.prisma.attachment.create({
@@ -72,10 +113,11 @@ export class AttachmentsService {
     // Processa OCR se for imagem
     if (
       processOcr &&
+      tempFilePath &&
       ['image/jpeg', 'image/png', 'image/jpg'].includes(file.mimetype)
     ) {
       try {
-        const extracted = await this.ocrService.extractText(filePath);
+        const extracted = await this.ocrService.extractText(tempFilePath);
 
         // Salva resultado do OCR
         await this.prisma.ocrExtract.create({
@@ -88,14 +130,24 @@ export class AttachmentsService {
         });
 
         ocrResult = extracted;
+
+        // Remove arquivo temporário se usou Supabase
+        if (this.useSupabase) {
+          await fs.unlink(tempFilePath).catch(() => {});
+        }
       } catch (error) {
         console.error('Erro ao processar OCR:', error);
+        // Remove temp file em caso de erro
+        if (this.useSupabase && tempFilePath) {
+          await fs.unlink(tempFilePath).catch(() => {});
+        }
       }
     }
 
     return {
       attachmentId: attachment.id,
       storageKey: attachment.storageKey,
+      publicUrl,
       ocrResult,
     };
   }
@@ -136,9 +188,14 @@ export class AttachmentsService {
     filename: string;
   }> {
     const attachment = await this.findOne(attachmentId);
-    const filePath = path.join(this.uploadDir, attachment.storageKey);
+    let buffer: Buffer;
 
-    const buffer = await fs.readFile(filePath);
+    if (this.useSupabase && this.storageAdapter) {
+      buffer = await this.storageAdapter.download(attachment.storageKey);
+    } else {
+      const filePath = path.join(this.uploadDir, attachment.storageKey);
+      buffer = await fs.readFile(filePath);
+    }
 
     return {
       buffer,
@@ -152,13 +209,17 @@ export class AttachmentsService {
    */
   async remove(attachmentId: string) {
     const attachment = await this.findOne(attachmentId);
-    const filePath = path.join(this.uploadDir, attachment.storageKey);
 
-    // Remove arquivo físico
-    try {
-      await fs.unlink(filePath);
-    } catch (error) {
-      console.error('Erro ao remover arquivo:', error);
+    // Remove arquivo físico ou do Supabase
+    if (this.useSupabase && this.storageAdapter) {
+      await this.storageAdapter.delete(attachment.storageKey);
+    } else {
+      const filePath = path.join(this.uploadDir, attachment.storageKey);
+      try {
+        await fs.unlink(filePath);
+      } catch (error) {
+        console.error('Erro ao remover arquivo:', error);
+      }
     }
 
     // Remove do banco
