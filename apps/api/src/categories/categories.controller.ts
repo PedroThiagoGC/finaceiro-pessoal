@@ -1,16 +1,16 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, Request, UseGuards } from '@nestjs/common';
-import { 
-  ApiBearerAuth, 
-  ApiOperation, 
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiParam,
   ApiTags,
   ApiResponse as SwaggerResponse,
-  ApiBody,
-  ApiParam,
 } from '@nestjs/swagger';
 import type { ApiResponse, CreateCategoryInput } from '@pwr/types';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CategoriesService } from './categories.service';
-import { CreateCategoryDto, UpdateCategoryDto, CategoryDto } from './dto/category.dto';
+import { CategoryDto, CreateCategoryDto, UpdateCategoryDto } from './dto/category.dto';
 
 @ApiTags('categories')
 @Controller('categories')
