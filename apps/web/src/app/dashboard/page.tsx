@@ -1,9 +1,9 @@
 'use client';
 
+import RecentTransactionsList from '@/components/transactions/RecentTransactionsList';
 import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import RecentTransactionsList from '@/components/transactions/RecentTransactionsList';
 
 interface DashboardStats {
   totalIncome: number;

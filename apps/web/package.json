@@ -15,7 +15,6 @@
     "react-dom": "^18.2.0",
   "@pwr/types": "file:../../packages/types",
     "@tanstack/react-query": "^5.14.2",
-    "axios": "^1.6.2",
     "dexie": "^3.2.4",
     "dexie-react-hooks": "^1.1.7",
     "recharts": "^2.10.3",
