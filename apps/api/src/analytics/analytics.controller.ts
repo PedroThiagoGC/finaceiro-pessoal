@@ -24,6 +24,12 @@ export class AnalyticsController {
   })
   @ApiQuery({ name: 'startDate', required: false, description: 'Data inicial (YYYY-MM-DD)', example: '2024-01-01' })
   @ApiQuery({ name: 'endDate', required: false, description: 'Data final (YYYY-MM-DD)', example: '2024-01-31' })
+  @ApiQuery({ name: 'categoryId', required: false })
+  @ApiQuery({ name: 'accountId', required: false })
+  @ApiQuery({ name: 'cardId', required: false })
+  @ApiQuery({ name: 'flow', required: false, enum: ['income','expense','transfer'] })
+  @ApiQuery({ name: 'planned', required: false, type: Boolean })
+  @ApiQuery({ name: 'reconciled', required: false, type: Boolean })
   @SwaggerResponse({ 
     status: 200, 
     description: 'Visão geral retornada com sucesso',
@@ -47,8 +53,23 @@ export class AnalyticsController {
     @Request() req: any,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
+    @Query('categoryId') categoryId?: string,
+    @Query('accountId') accountId?: string,
+    @Query('cardId') cardId?: string,
+    @Query('flow') flow?: string,
+    @Query('planned') planned?: string,
+    @Query('reconciled') reconciled?: string,
   ): Promise<ApiResponse> {
-    const data = await this.analyticsService.getOverview(req.user.userId, startDate, endDate);
+    const data = await this.analyticsService.getOverview(req.user.userId, {
+      startDate,
+      endDate,
+      categoryId,
+      accountId,
+      cardId,
+      flow,
+      planned: planned === undefined ? undefined : planned === 'true',
+      reconciled: reconciled === undefined ? undefined : reconciled === 'true',
+    });
     return { success: true, data };
   }
 
@@ -59,6 +80,12 @@ export class AnalyticsController {
   })
   @ApiQuery({ name: 'startDate', required: false, description: 'Data inicial (YYYY-MM-DD)', example: '2024-01-01' })
   @ApiQuery({ name: 'endDate', required: false, description: 'Data final (YYYY-MM-DD)', example: '2024-01-31' })
+  @ApiQuery({ name: 'categoryId', required: false })
+  @ApiQuery({ name: 'accountId', required: false })
+  @ApiQuery({ name: 'cardId', required: false })
+  @ApiQuery({ name: 'flow', required: false, enum: ['income','expense','transfer'] })
+  @ApiQuery({ name: 'planned', required: false, type: Boolean })
+  @ApiQuery({ name: 'reconciled', required: false, type: Boolean })
   @SwaggerResponse({ 
     status: 200, 
     description: 'Gastos por categoria retornados com sucesso',
@@ -87,8 +114,23 @@ export class AnalyticsController {
     @Request() req: any,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
+    @Query('categoryId') categoryId?: string,
+    @Query('accountId') accountId?: string,
+    @Query('cardId') cardId?: string,
+    @Query('flow') flow?: string,
+    @Query('planned') planned?: string,
+    @Query('reconciled') reconciled?: string,
   ): Promise<ApiResponse> {
-    const data = await this.analyticsService.getByCategory(req.user.userId, startDate, endDate);
+    const data = await this.analyticsService.getByCategory(req.user.userId, {
+      startDate,
+      endDate,
+      categoryId,
+      accountId,
+      cardId,
+      flow,
+      planned: planned === undefined ? undefined : planned === 'true',
+      reconciled: reconciled === undefined ? undefined : reconciled === 'true',
+    });
     return { success: true, data };
   }
 

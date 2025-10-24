@@ -1,7 +1,7 @@
 'use client';
 
 import { OcrResult, useUploadFile } from '@/lib/attachments';
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 interface FileUploadProps {
   onUploadComplete?: (result: {
@@ -20,6 +20,8 @@ export function FileUpload({
   const [dragActive, setDragActive] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const cameraInputRef = useRef<HTMLInputElement | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const uploadMutation = useUploadFile();
 
@@ -98,31 +100,70 @@ export function FileUpload({
   return (
     <div className="w-full">
       {!selectedFile ? (
-        <div
-          className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-            dragActive
-              ? 'border-blue-500 bg-blue-50'
-              : 'border-gray-300 hover:border-gray-400'
-          }`}
-          onDragEnter={handleDrag}
-          onDragLeave={handleDrag}
-          onDragOver={handleDrag}
-          onDrop={handleDrop}
-        >
-          <input
-            type="file"
-            accept="image/*,application/pdf"
-            onChange={handleChange}
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-          />
-          <div className="space-y-2">
-            <div className="text-4xl">📁</div>
-            <p className="text-gray-600">
-              Arraste uma imagem ou PDF aqui, ou clique para selecionar
-            </p>
-            <p className="text-sm text-gray-400">
-              Formatos suportados: JPG, PNG, PDF
-            </p>
+        <div>
+          {/* Botões rápidos para câmera e arquivos */}
+          <div className="flex flex-wrap gap-2 mb-3">
+            <button
+              type="button"
+              onClick={() => cameraInputRef.current?.click()}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            >
+              Tirar foto (Câmera)
+            </button>
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+            >
+              Selecionar arquivo
+            </button>
+            {/* Inputs ocultos */}
+            {/* eslint-disable-next-line */}
+            <input
+              ref={cameraInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={handleChange}
+              className="hidden"
+              aria-label="Abrir câmera para tirar foto"
+              title="Abrir câmera para tirar foto"
+            />
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*,application/pdf"
+              onChange={handleChange}
+              className="hidden"
+              aria-label="Selecionar arquivo de imagem ou PDF"
+              title="Selecionar arquivo de imagem ou PDF"
+            />
+          </div>
+
+          {/* Dropzone clicável (abre seletor de arquivo) */}
+          <div
+            className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+              dragActive
+                ? 'border-blue-500 bg-blue-50'
+                : 'border-gray-300 hover:border-gray-400'
+            }`}
+            onDragEnter={handleDrag}
+            onDragLeave={handleDrag}
+            onDragOver={handleDrag}
+            onDrop={handleDrop}
+            onClick={() => fileInputRef.current?.click()}
+            role="button"
+            tabIndex={0}
+          >
+            <div className="space-y-2">
+              <div className="text-4xl">�</div>
+              <p className="text-gray-600">
+                Arraste uma imagem ou PDF aqui, clique para selecionar, ou use a câmera
+              </p>
+              <p className="text-sm text-gray-400">
+                Formatos suportados: JPG, PNG, PDF
+              </p>
+            </div>
           </div>
         </div>
       ) : (

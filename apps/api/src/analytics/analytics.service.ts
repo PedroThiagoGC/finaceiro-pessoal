@@ -5,14 +5,42 @@ import { PrismaService } from '../prisma/prisma.service';
 export class AnalyticsService {
   constructor(private prisma: PrismaService) {}
 
-  async getOverview(userId: string, startDate?: string, endDate?: string) {
-    const where: any = { userId, reconciled: true };
-    
-    if (startDate || endDate) {
+  private buildWhere(userId: string, filters?: {
+    startDate?: string;
+    endDate?: string;
+    categoryId?: string;
+    accountId?: string;
+    cardId?: string;
+    flow?: string;
+    planned?: boolean;
+    reconciled?: boolean;
+  }) {
+    const where: any = { userId };
+    if (filters?.reconciled !== undefined) where.reconciled = filters.reconciled;
+    if (filters?.planned !== undefined) where.planned = filters.planned;
+    if (filters?.categoryId) where.categoryId = filters.categoryId;
+    if (filters?.accountId) where.accountId = filters.accountId;
+    if (filters?.cardId) where.cardId = filters.cardId;
+    if (filters?.flow) where.flow = filters.flow;
+    if (filters?.startDate || filters?.endDate) {
       where.date = {};
-      if (startDate) where.date.gte = new Date(startDate);
-      if (endDate) where.date.lte = new Date(endDate);
+      if (filters.startDate) where.date.gte = new Date(filters.startDate);
+      if (filters.endDate) where.date.lte = new Date(filters.endDate);
     }
+    return where;
+  }
+
+  async getOverview(userId: string, filters?: {
+    startDate?: string;
+    endDate?: string;
+    categoryId?: string;
+    accountId?: string;
+    cardId?: string;
+    flow?: string;
+    planned?: boolean;
+    reconciled?: boolean;
+  }) {
+    const where = this.buildWhere(userId, filters);
 
     const transactions = await this.prisma.transaction.findMany({ where });
 
@@ -24,7 +52,7 @@ export class AnalyticsService {
       .filter(t => t.flow === 'expense')
       .reduce((acc, t) => acc + t.amount, 0);
 
-    const totalBalance = totalIncome - totalExpense;
+  const totalBalance = totalIncome - totalExpense;
 
     // Check "no vermelho" status
     const isInRed = totalBalance < 0;
@@ -42,14 +70,17 @@ export class AnalyticsService {
     };
   }
 
-  async getByCategory(userId: string, startDate?: string, endDate?: string) {
-    const where: any = { userId, reconciled: true };
-    
-    if (startDate || endDate) {
-      where.date = {};
-      if (startDate) where.date.gte = new Date(startDate);
-      if (endDate) where.date.lte = new Date(endDate);
-    }
+  async getByCategory(userId: string, filters?: {
+    startDate?: string;
+    endDate?: string;
+    categoryId?: string;
+    accountId?: string;
+    cardId?: string;
+    flow?: string;
+    planned?: boolean;
+    reconciled?: boolean;
+  }) {
+    const where = this.buildWhere(userId, filters);
 
     const transactions = await this.prisma.transaction.findMany({
       where,

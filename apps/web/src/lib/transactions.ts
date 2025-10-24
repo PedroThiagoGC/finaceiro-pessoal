@@ -25,6 +25,7 @@ export async function fetchTransactions(params?: {
   offset?: number;
   startDate?: string;
   endDate?: string;
+  flow?: 'income' | 'expense' | 'transfer';
   categoryId?: string;
   accountId?: string;
   cardId?: string;
@@ -36,6 +37,7 @@ export async function fetchTransactions(params?: {
   if (params?.offset) queryParams.append('offset', params.offset.toString());
   if (params?.startDate) queryParams.append('startDate', params.startDate);
   if (params?.endDate) queryParams.append('endDate', params.endDate);
+  if (params?.flow) queryParams.append('flow', params.flow);
   if (params?.categoryId) queryParams.append('categoryId', params.categoryId);
   if (params?.accountId) queryParams.append('accountId', params.accountId);
   if (params?.cardId) queryParams.append('cardId', params.cardId);

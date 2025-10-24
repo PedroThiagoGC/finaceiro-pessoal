@@ -1,4 +1,5 @@
 import { Providers } from '@/components/providers';
+import LayoutFrame from '@/components/shell/LayoutFrame';
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
@@ -37,7 +38,9 @@ export default function RootLayout({
     <html lang="pt-BR">
       {/* head is handled by Next.js metadata API */}
       <body className={inter.className}>
-        <Providers>{children}</Providers>
+        <Providers>
+          <LayoutFrame>{children}</LayoutFrame>
+        </Providers>
       </body>
     </html>
   );
